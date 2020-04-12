@@ -46,11 +46,15 @@ impl Game {
             duh.push(signs[i * (row_size)..i * row_size + (row_size)].to_owned());
         }
 
-        println!("{}", "-".repeat(row_size * 3));
+        let mut draw: Vec<String> = vec![];
+        draw.push(format!("┌{}┐","─".repeat((row_size * 2) - 1).to_string()));
         for v in duh {
-            v.iter().for_each(|x| print!("{}", x));
-            println!("\n{}", '-'.to_string().repeat(row_size * 3));
+            draw.push(format!("│{}│", v.join("│")));
+            draw.push(format!("├{}┤", "─".repeat((row_size * 2) - 1)));
         }
+        draw.pop();
+        draw.push(format!("└{}┘", '─'.to_string().repeat((row_size * 2) - 1)));
+        println!("{}", draw.join("\n"));
     }
 
     pub fn mark(&mut self, point: Point) -> Result<(), String> {

@@ -19,8 +19,8 @@ impl Default for Field {
 impl Field {
     pub fn draw(&self) -> String {
         match self {
-            Field::EMPTY => "| |".to_string(),
-            Field::OWNED(player) => format!("|{}|", player.sign),
+            Field::EMPTY => " ".to_string(),
+            Field::OWNED(player) => format!("{}", player.sign),
         }
     }
 }
