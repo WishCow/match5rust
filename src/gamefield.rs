@@ -4,8 +4,6 @@ use crate::player::Player;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-const ROW_SIZE: usize = 3;
-
 #[derive(Debug, Hash, PartialEq, Eq)]
 pub enum Field {
     EMPTY,
@@ -31,8 +29,8 @@ impl Field {
 pub struct Point(usize, usize);
 
 impl Point {
-    pub fn to_index(&self) -> usize {
-        (self.1 * ROW_SIZE) + self.0
+    pub fn to_index(&self, row_size: usize) -> usize {
+        (self.1 * row_size) + self.0
     }
 
     pub fn new(x: usize, y: usize) -> Self {
@@ -43,12 +41,6 @@ impl Point {
         let x = i % row_size;
         let y = i / row_size;
         Self::new(x, y)
-    }
-}
-
-impl Into<usize> for Point {
-    fn into(self) -> usize {
-        self.to_index()
     }
 }
 
@@ -112,12 +104,12 @@ impl GameField {
 
         Ok(self
             .fields
-            .get(point.to_index())
+            .get(point.to_index(self.row_size))
             .expect("This should not happen"))
     }
 
     pub fn mark(&mut self, player: Rc<Player>, point: Point) -> Result<(), String> {
-        let i: usize = point.into();
+        let i: usize = point.to_index(self.row_size);
         let maybe_field = self.fields.get(i);
         if maybe_field.is_none() {
             return Err(format!("Field {} is out of bounds", i));
@@ -235,7 +227,7 @@ mod tests {
         for i in test_values.into_iter() {
             let (x, y, expected) = i;
             let point = Point(x, y);
-            let actual = point.to_index();
+            let actual = point.to_index(3);
             assert!(
                 actual == expected,
                 "Failed for ({}, {}) -> {} but got {}",
@@ -316,7 +308,7 @@ mod tests {
         for (i, char) in marks.iter().enumerate() {
             let player = players.iter().find(|p| p.sign == *char).unwrap();
             game_field
-                .mark(player.clone(), Point::from_index(i, ROW_SIZE))
+                .mark(player.clone(), Point::from_index(i, 3))
                 .expect("Could not mark a location?");
         }
         assert_eq!(game_field.state(), GameState::TIE);
