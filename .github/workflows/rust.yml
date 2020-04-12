@@ -1,8 +1,8 @@
-name: Rust
+name: Build & test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, devel ]
   pull_request:
     branches: [ master ]
 
