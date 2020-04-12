@@ -51,7 +51,7 @@ impl fmt::Display for Point {
 }
 
 pub struct GameField {
-    fields: Vec<Field>,
+    pub fields: Vec<Field>,
     pub row_size: usize,
     pub column_size: usize,
     win_count: usize,

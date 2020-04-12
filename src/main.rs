@@ -32,13 +32,13 @@ impl Input {
 
 fn main() {
     let players = vec![('X', "Red"), ('O', "Green")];
-    let gamefield: GameField = GameField::new(10, 10, 5);
+    let gamefield: GameField = GameField::new(3, 3, 3);
     let mut game = Game::new(players, gamefield);
     let ui = AsciiUI::new();
     io::stdout().flush().expect("Could not flush input buffer");
     while !game.is_finished() {
         let mut entered = String::new();
-        ui.draw(&game);
+        println!("{}", ui.draw(&game));
         let stdin = std::io::stdin();
         stdin.read_line(&mut entered).expect("Could not read stdin");
         let input = Input::from_string(&entered);
