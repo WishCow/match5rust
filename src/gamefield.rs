@@ -16,15 +16,6 @@ impl Default for Field {
     }
 }
 
-impl Field {
-    pub fn draw(&self) -> String {
-        match self {
-            Field::EMPTY => " ".to_string(),
-            Field::OWNED(player) => format!("{}", player.sign),
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct Point(usize, usize);
 
@@ -79,10 +70,6 @@ impl GameField {
             column_size,
             win_count,
         }
-    }
-
-    pub fn get(&self) -> std::slice::Iter<Field> {
-        self.fields.iter()
     }
 
     fn by_point(&self, point: &Point) -> Result<&Field, String> {

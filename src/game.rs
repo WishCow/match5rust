@@ -21,7 +21,7 @@ impl Game {
             players,
             fields,
             turn: 0,
-            is_finished: false
+            is_finished: false,
         }
     }
 

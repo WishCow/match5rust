@@ -1,57 +1,65 @@
 use std::io;
-use std::io::prelude::*;
 
 mod asciiui;
 mod game;
 mod gamefield;
 mod player;
+use asciiui::AsciiUI;
 use game::*;
 use gamefield::*;
-use asciiui::AsciiUI;
+
+extern crate termion;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
 
 #[derive(Debug, PartialEq, Eq)]
-enum Input {
+pub enum Input {
     INVALID,
     QUIT,
-    MARK(usize),
+    MARK,
+    LEFT,
+    RIGHT,
+    DOWN,
+    UP,
+    NOOP,
 }
 
-impl Input {
-    fn from_string(input: &str) -> Self {
-        let input = input.trim();
-        if input == "q" {
-            return Self::QUIT;
-        }
-        let m = input.parse::<usize>();
-        match m {
-            Ok(val) => Self::MARK(val),
-            Err(_e) => Self::INVALID,
-        }
+fn termion_key_to_input(key: Option<Result<termion::event::Key, std::io::Error>>) -> Input {
+    match key {
+        Some(Err(e)) => panic!("Cannot read from stdio: {}", e),
+        Some(Ok(key)) => match key {
+            termion::event::Key::Char('q') => Input::QUIT,
+            termion::event::Key::Char(' ') => Input::MARK,
+            termion::event::Key::Char('h') => Input::LEFT,
+            termion::event::Key::Char('j') => Input::DOWN,
+            termion::event::Key::Char('k') => Input::UP,
+            termion::event::Key::Char('l') => Input::RIGHT,
+            _ => Input::NOOP,
+        },
+        _ => Input::NOOP,
     }
 }
 
 fn main() {
     let players = vec![('X', "Red"), ('O', "Green")];
-    let gamefield: GameField = GameField::new(3, 3, 3);
+    let gamefield: GameField = GameField::new(5, 5, 5);
     let mut game = Game::new(players, gamefield);
-    let ui = AsciiUI::new();
-    io::stdout().flush().expect("Could not flush input buffer");
+    let mut ui = AsciiUI::new();
+    let _stdout = io::stdout().into_raw_mode();
+    let mut stdin = io::stdin().keys();
     while !game.is_finished() {
-        let mut entered = String::new();
         println!("{}", ui.draw(&game));
-        let stdin = std::io::stdin();
-        stdin.read_line(&mut entered).expect("Could not read stdin");
-        let input = Input::from_string(&entered);
+        let entered = stdin.next();
+        let input = termion_key_to_input(entered);
         match input {
-            Input::INVALID => println!("Invalid input: {}", &entered),
+            Input::INVALID => println!("Invalid input"),
             Input::QUIT => game.quit(),
-            Input::MARK(i) => {
-                let result = game.mark_by_index(i);
+            Input::UP | Input::DOWN | Input::LEFT | Input::RIGHT => ui.move_(&game, input),
+            Input::MARK => {
+                let result = game.mark_by_index(ui.considering);
                 match result {
                     Err(error) => {
                         println!("Invalid input: {}", error);
-                        let mut discard = String::new();
-                        stdin.read_line(&mut discard).expect("Failed to flush io");
                         continue;
                     }
                     Ok(_) => match game.state() {
@@ -64,6 +72,7 @@ fn main() {
                     },
                 }
             }
+            Input::NOOP => {}
         }
     }
 }
